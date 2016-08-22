@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hand.dao.CustomerDao">
+	<resultMap type="com.hand.dto.Customer" id="customerMap">
+		<id property="customerId" column="customer_id" />
+		<result property="firstName" column="first_name" />
+		<result property="lastName" column="last_name" />
+		<result property="email" column="email" />
+		<result property="active" column="active" />
+		<result property="createDate" column="create_date" />
+		<association property="address" resultMap="com.hand.dao.AddressDao.addressMap"/>
+		<association property="store" resultMap="com.hand.dao.StoreDao.storeMap" />
+	</resultMap>
+	
+	<select id="getListByPage" parameterType="int" resultMap="customerMap">
+		SELECT * FROM customer c ORDER BY create_date DESC LIMIT #{count},10
+	</select>
+	
+	<select id="login" parameterType="string" resultType="string">
+		SELECT first_name FROM customer WHERE first_name=#{name}
+	</select>
+	
+	<insert id="save" parameterType="com.hand.dto.Customer">
+		insert into 
+		customer(`store_id`, `first_name`, `last_name`, `email`, `address_id`, `create_date`) 
+		values(#{store.storeId},#{firstName},#{lastName},#{email},#{address.addressId},#{createDate})
+	</insert>
+	
+	<select id="getOne" resultMap="customerMap">
+		SELECT c.customer_id,c.first_name,c.last_name,c.email,a.address,c.create_date  
+		FROM customer c 
+		INNER JOIN address a 
+		ON a.address_id=c.address_id 
+		ORDER BY c.create_date DESC 
+		LIMIT 1
+	</select>
+	
+	<select id="getById"  parameterType="int" resultMap="customerMap">
+		SELECT customer_id FROM customer c WHERE c.customer_id = #{id}
+	</select>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM rental WHERE rental.customer_id=#{id};
+		DELETE FROM payment WHERE customer_id=#{id};
+		DELETE FROM customer WHERE customer_id = #{id};
+	</delete>
+	
+</mapper>
